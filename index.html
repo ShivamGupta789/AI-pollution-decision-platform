@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Vaayu Saathi - Real-time air quality monitoring and forecasting for Delhi NCR">
+    <meta name="keywords" content="AQI, air quality, pollution, Delhi, health, forecasting">
+    <title>Vaayu Saathi | Air Quality Dashboard</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Leaflet for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/new-features.css">
+</head>
+
+<body>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">🌬️</div>
+                <div class="logo-text">
+                    <h2>Vaayu Saathi</h2>
+                    <p>Air Quality Intelligence</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#dashboard" class="nav-item active" data-page="dashboard">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            <a href="#map" class="nav-item" data-page="map">
+                <span class="nav-icon">🗺️</span>
+                <span class="nav-text">Map</span>
+            </a>
+            <a href="#forecasting" class="nav-item" data-page="forecasting">
+                <span class="nav-icon">📈</span>
+                <span class="nav-text">Forecasting</span>
+            </a>
+            <a href="#health" class="nav-item" data-page="health">
+                <span class="nav-icon">🏥</span>
+                <span class="nav-text">Health Insights</span>
+            </a>
+            <a href="#policy" class="nav-item" data-page="policy">
+                <span class="nav-icon">⚖️</span>
+                <span class="nav-text">Policy Simulation</span>
+            </a>
+            <a href="#analytics" class="nav-item" data-page="analytics">
+                <span class="nav-icon">📉</span>
+                <span class="nav-text">Analytics</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="live-aqi-widget">
+                <div class="live-aqi-label">Live AQI</div>
+                <div class="live-aqi-value" id="sidebar-aqi">--</div>
+                <div class="live-aqi-category" id="sidebar-category">Loading...</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+        <!-- Top Header Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <h1 class="page-title" id="pageTitle">Dashboard</h1>
+            </div>
+            <div class="topbar-right">
+                <div class="location-selector">
+                    <span class="location-icon">📍</span>
+                    <select id="locationSelect" class="location-dropdown">
+                        <option value="delhi">Delhi</option>
+                        <option value="noida">Noida</option>
+                        <option value="gurgaon">Gurgaon</option>
+                        <option value="faridabad">Faridabad</option>
+                        <option value="ghaziabad">Ghaziabad</option>
+                    </select>
+                </div>
+                <button class="theme-toggle" id="themeToggle">🌙</button>
+            </div>
+        </header>
+
+        <!-- Global Alert Banner -->
+        <div class="global-alert-banner" id="globalAlertBanner" style="display: none;">
+            <div class="alert-content">
+                <span class="alert-icon" id="globalAlertIcon">🚨</span>
+                <span class="alert-message" id="globalAlertMessage"></span>
+                <button class="alert-close" id="closeAlert">✕</button>
+            </div>
+        </div>
+
+        <!-- Page Content -->
+        <main class="content" id="mainContent">
+            <!-- DASHBOARD PAGE -->
+            <div class="page active" id="dashboard-page">
+                <!-- Current Metrics Grid -->
+                <section class="metrics-grid">
+                    <!-- AQI Card -->
+                    <div class="metric-card aqi-card" id="aqiCard">
+                        <div class="metric-header">
+                            <span class="metric-icon">🎯</span>
+                            <span class="metric-label">AQI</span>
+                        </div>
+                        <div class="metric-value" id="currentAQI">--</div>
+                        <div class="metric-status" id="aqiStatus">Loading...</div>
+                        <div class="metric-footer">
+                            <span id="aqiTime">--</span>
+                        </div>
+                    </div>
+
+                    <!-- PM2.5 Card -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-icon">🌫️</span>
+                            <span class="metric-label">PM2.5</span>
+                        </div>
+                        <div class="metric-value small" id="pm25Value">--</div>
+                        <div class="metric-unit">μg/m³</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="pm25Progress"></div>
+                        </div>
+                    </div>
+
+                    <!-- PM10 Card -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-icon">💨</span>
+                            <span class="metric-label">PM10</span>
+                        </div>
+                        <div class="metric-value small" id="pm10Value">--</div>
+                        <div class="metric-unit">μg/m³</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="pm10Progress"></div>
+                        </div>
+                    </div>
+
+                    <!-- Humidity Card -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-icon">💧</span>
+                            <span class="metric-label">Humidity</span>
+                        </div>
+                        <div class="metric-value small" id="humidityValue">--</div>
+                        <div class="metric-unit">%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="humidityProgress"></div>
+                        </div>
+                    </div>
+
+                    <!-- Temperature Card -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-icon">🌡️</span>
+                            <span class="metric-label">Temperature</span>
+                        </div>
+                        <div class="metric-value small" id="tempValue">--</div>
+                        <div class="metric-unit">°C</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="tempProgress"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Real-time Map Section -->
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>🗺️ Real-time AQI Map</h2>
+                        </div>
+                        <div class="map-container">
+                            <div id="dashboardMap" class="mini-map"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Forecast Section -->
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>📈 AQI Forecast - Next 48 Hours</h2>
+                        </div>
+                        <div class="forecast-scroll">
+                            <div class="forecast-timeline" id="forecastTimeline">
+                                <!-- Forecast cards will be populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Historical Trends Section -->
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>📊 Historical AQI Trends</h2>
+                            <div class="trend-filters">
+                                <button class="filter-btn active" data-period="week">Week</button>
+                                <button class="filter-btn" data-period="month">Month</button>
+                                <button class="filter-btn" data-period="year">Year</button>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="historicalChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Health Recommendations Section -->
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>🏥 Health Recommendations</h2>
+                        </div>
+                        <div class="recommendations-grid" id="healthRecommendations">
+                            <!-- Recommendations will be populated by JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Pollution Sources Section -->
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>🔍 Pollution Sources</h2>
+                        </div>
+                        <div class="sources-grid">
+                            <div class="sources-chart">
+                                <canvas id="sourcesChart"></canvas>
+                            </div>
+                            <div class="sources-list" id="sourcesList">
+                                <!-- Sources list will be populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- MAP PAGE -->
+            <div class="page" id="map-page">
+                <section class="full-section">
+                    <div class="map-controls">
+                        <div class="map-control-group">
+                            <label>Map Layer:</label>
+                            <select id="mapLayerSelect">
+                                <option value="aqi">AQI Heatmap</option>
+                                <option value="pm25">PM2.5 Heatmap</option>
+                                <option value="pm10">PM10 Heatmap</option>
+                            </select>
+                        </div>
+                        <div class="map-control-group">
+                            <input type="text" id="mapSearch" placeholder="Search location...">
+                            <button class="btn-search" id="searchBtn">🔍</button>
+                        </div>
+                    </div>
+                    <div class="map-wrapper">
+                        <div id="mainMap" class="full-map"></div>
+                        <div class="map-legend" id="mapLegend">
+                            <h4>AQI Levels</h4>
+                            <div class="legend-item"><span class="legend-color good"></span> Good (0-50)</div>
+                            <div class="legend-item"><span class="legend-color moderate"></span> Moderate (51-100)</div>
+                            <div class="legend-item"><span class="legend-color unhealthy-sensitive"></span> Unhealthy
+                                for Sensitive (101-150)</div>
+                            <div class="legend-item"><span class="legend-color unhealthy"></span> Unhealthy (151-200)
+                            </div>
+                            <div class="legend-item"><span class="legend-color very-unhealthy"></span> Very Unhealthy
+                                (201-300)</div>
+                            <div class="legend-item"><span class="legend-color hazardous"></span> Hazardous (301+)</div>
+                        </div>
+                    </div>
+                    <div class="location-comparison" id="locationComparison">
+                        <h3>Multi-Location Comparison</h3>
+                        <div class="comparison-grid" id="comparisonGrid">
+                            <!-- Comparison cards will be populated by JS -->
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- FORECASTING PAGE -->
+            <div class="page" id="forecasting-page">
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>📈 Extended Forecast</h2>
+                            <div class="forecast-options">
+                                <button class="filter-btn active" data-forecast="hourly">Hourly</button>
+                                <button class="filter-btn" data-forecast="daily">Daily (7 days)</button>
+                                <button class="filter-btn" data-forecast="extended">Extended (14 days)</button>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="forecastChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>🌦️ Weather Impact Analysis</h2>
+                        </div>
+                        <div class="weather-grid" id="weatherGrid">
+                            <!-- Weather cards will be populated by JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>📊 Trend Prediction</h2>
+                        </div>
+                        <div class="prediction-details" id="predictionDetails">
+                            <!-- Prediction details will be populated by JS -->
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- HEALTH INSIGHTS PAGE -->
+            <div class="page" id="health-page">
+                <section class="dashboard-section">
+                    <div class="section-card alert-card" id="healthAlert">
+                        <!-- Alert will be dynamically added -->
+                    </div>
+                </section>
+
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>👥 Group-Specific Recommendations</h2>
+                        </div>
+                        <div class="health-groups-grid">
+                            <div class="health-group-card">
+                                <div class="group-icon">👶</div>
+                                <h3>Children</h3>
+                                <div class="group-recommendations" id="childrenAdvice"></div>
+                            </div>
+                            <div class="health-group-card">
+                                <div class="group-icon">👴</div>
+                                <h3>Elderly</h3>
+                                <div class="group-recommendations" id="elderlyAdvice"></div>
+                            </div>
+                            <div class="health-group-card">
+                                <div class="group-icon">🤰</div>
+                                <h3>Pregnant Women</h3>
+                                <div class="group-recommendations" id="pregnantAdvice"></div>
+                            </div>
+                            <div class="health-group-card">
+                                <div class="group-icon">🏥</div>
+                                <h3>Respiratory Patients</h3>
+                                <div class="group-recommendations" id="patientsAdvice"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>🏃 Activity Recommendations</h2>
+                        </div>
+                        <div class="activities-grid" id="activitiesGrid">
+                            <!-- Activity cards will be populated by JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>🛣️ Safer Travel Routes</h2>
+                        </div>
+                        <div id="saferRoutesContainer">
+                            <div class="routes-grid" id="routesGrid">
+                                <!-- Route comparison cards will be populated by JS -->
+                            </div>
+                            <div class="best-times-display" id="bestTimesDisplay">
+                                <!-- Best travel times will be populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>🛡️ Protection Measures</h2>
+                        </div>
+                        <div class="measures-grid" id="protectionMeasures">
+                            <!-- Protection measures will be populated by JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>📊 Air Quality Health Index</h2>
+                        </div>
+                        <div class="health-index-display" id="healthIndex">
+                            <!-- Health index visualization will be populated by JS -->
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- POLICY SIMULATION PAGE -->
+            <div class="page" id="policy-page">
+                <!-- Alert Banner -->
+                <div class="alert-banner" id="policyAlertBanner" style="display: none;">
+                    <div class="alert-content">
+                        <span class="alert-icon">⚠️</span>
+                        <span class="alert-message" id="policyAlert Message"></span>
+                    </div>
+                </div>
+
+                <!-- Baseline Conditions -->
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>📊 Current Pollution Baseline</h2>
+                        </div>
+                        <div id="baselineStats">
+                            <!-- Will be populated by JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Policy Selection -->
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>⚖️ Select Policies to Simulate</h2>
+                            <div class="selection-info">
+                                <span id="selectedPolicyCount">0</span> policies selected
+                            </div>
+                        </div>
+                        <div class="policy-grid" id="policyList">
+                            <!-- Policy cards will be populated by JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Simulation Controls -->
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="simulation-controls">
+                            <button class="btn-primary" id="simulatePolicies" disabled>
+                                ▶️ Run Simulation
+                            </button>
+                            <button class="btn-secondary" id="compareAreas">
+                                🗺️ Compare Multiple Areas
+                            </button>
+                            <button class="btn-secondary" id="resetSimulation">
+                                🔄 Reset
+                            </button>
+                            <button class="btn-secondary" id="exportPolicyReport">
+                                📥 Export Report
+                            </button>
+                        </div>
+                        <div class="simulation-loader" id="simulationLoader" style="display: none;">
+                            <div class="loader-spinner"></div>
+                            <p>Running simulation...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Simulation Results -->
+                <div id="simulationResults" style="display: none;">
+                    <!-- Impact Summary -->
+                    <section class="dashboard-section">
+                        <div class="section-card">
+                            <div class="section-header">
+                                <h2>🎯 Impact Summary</h2>
+                            </div>
+                            <div id="impactSummary">
+                                <!-- Will be populated by JS -->
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Before/After Comparison -->
+                    <section class="dashboard-section">
+                        <div class="section-card">
+                            <div class="section-header">
+                                <h2>📊 Before & After Comparison</h2>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="beforeAfterChart"></canvas>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Pollutant Breakdown -->
+                    <section class="dashboard-section">
+                        <div class="section-card">
+                            <div class="section-header">
+                                <h2>🧪 Pollutant Level Changes</h2>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="pollutantBreakdownChart"></canvas>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Area Comparison (Hidden by default) -->
+                    <section class="dashboard-section" id="areaComparisonSection" style="display: none;">
+                        <div class="section-card">
+                            <div class="section-header">
+                                <h2>🗺️ Multi-Area Impact</h2>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="areaComparisonChart"></canvas>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Recommendations -->
+                    <section class="dashboard-section">
+                        <div class="section-card alert-success">
+                            <div class="section-header">
+                                <h2>💡 Recommendations</h2>
+                            </div>
+                            <div id="policyRecommendations">
+                                <!-- Will be populated by JS -->
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- ANALYTICS PAGE -->
+            <div class="page" id="analytics-page">
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>📊 Pollution Patterns</h2>
+                            <select id="patternPeriod">
+                                <option value="daily">Daily Patterns</option>
+                                <option value="weekly">Weekly Patterns</option>
+                                <option value="monthly">Monthly Patterns</option>
+                                <option value="seasonal">Seasonal Patterns</option>
+                            </select>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="patternsChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>🎯 Source Attribution</h2>
+                        </div>
+                        <div class="attribution-layout">
+                            <div class="attribution-chart">
+                                <canvas id="attributionChart"></canvas>
+                            </div>
+                            <div class="attribution-details" id="attributionDetails">
+                                <!-- Source attribution details will be populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>📈 Comparative Analytics</h2>
+                        </div>
+                        <div class="comparison-controls">
+                            <div class="control-group">
+                                <label>Compare Locations:</label>
+                                <div class="multi-select" id="compareLocations">
+                                    <!-- Multi-select checkboxes will be populated by JS -->
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label>Time Range:</label>
+                                <select id="compareTimeRange">
+                                    <option value="7">Last 7 Days</option>
+                                    <option value="30">Last 30 Days</option>
+                                    <option value="90">Last 90 Days</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="comparativeChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>📥 Data Export</h2>
+                        </div>
+                        <div class="export-options">
+                            <div class="export-card">
+                                <h3>Export Current Data</h3>
+                                <p>Download current air quality metrics and forecasts</p>
+                                <button class="btn-export" id="exportCurrent">Export CSV</button>
+                            </div>
+                            <div class="export-card">
+                                <h3>Export Historical Data</h3>
+                                <p>Download historical trends and analytics</p>
+                                <button class="btn-export" id="exportHistorical">Export CSV</button>
+                            </div>
+                            <div class="export-card">
+                                <h3>Generate Report</h3>
+                                <p>Create comprehensive air quality report</p>
+                                <button class="btn-export" id="generateReport">Generate PDF</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="dashboard-section">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>📊 Statistical Summary</h2>
+                        </div>
+                        <div class="stats-grid" id="statsGrid">
+                            <!-- Statistical summary will be populated by JS -->
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+
+    <!-- Scripts -->
+    <!-- Core Engines -->
+    <script src="js/data-generator.js"></script>
+    <script src="js/pollution-engine.js"></script>
+    <script src="js/policy-simulator.js"></script>
+    <script src="js/aqi-forecaster.js"></script>
+    <script src="js/risk-detector.js"></script>
+    <script src="js/health-advisor.js"></script>
+
+    <!-- New Feature Modules -->
+    <script src="js/route-optimizer.js"></script>
+    <script src="js/source-visualizer.js"></script>
+    <script src="js/policy-dashboard.js"></script>
+    <script src="js/global-alert.js"></script>
+
+    <!-- UI Components -->
+    <script src="js/ui-components.js"></script>
+    <script src="js/visualizations.js"></script>
+
+    <!-- API & Charts -->
+    <script src="js/api.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/maps.js"></script>
+
+    <!-- Page Controllers -->
+    <script src="js/dashboard.js"></script>
+    <script src="js/health.js"></script>
+    <script src="js/analytics.js"></script>
+
+    <!-- Main App -->
+    <script src="js/app.js"></script>
+</body>
+
+</html>
