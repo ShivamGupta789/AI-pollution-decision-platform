@@ -17,8 +17,9 @@ class DashboardManager {
     }
 
     // Update all dashboard components
-    updateDashboard() {
-        const currentData = window.AirQualityAPI.generateCurrentData();
+    async updateDashboard() {
+        // Fetch real-time data from dual API
+        const currentData = await window.AirQualityAPI.fetchRealTimeData(window.AirQualityAPI.currentLocation);
         const category = window.AirQualityAPI.getAQICategory(currentData.aqi);
 
         // Update metrics cards
@@ -35,17 +36,6 @@ class DashboardManager {
 
         // Update pollution sources
         this.updatePollutionSources();
-
-        // Update map
-        if (document.getElementById('dashboardMap')) {
-            setTimeout(() => {
-                if (!window.MapsManager.maps['dashboardMap']) {
-                    window.MapsManager.initDashboardMap('dashboardMap');
-                } else {
-                    window.MapsManager.updateMapLocation('dashboardMap', window.AirQualityAPI.currentLocation);
-                }
-            }, 100);
-        }
     }
 
     // Update metrics cards

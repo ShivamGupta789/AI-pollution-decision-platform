@@ -230,13 +230,14 @@ body::before {
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-    padding: var(--spacing-md) var(--spacing-lg);
+    padding: var(--spacing-sm) var(--spacing-md);
     color: var(--text-secondary);
     text-decoration: none;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     transition: all var(--transition-fast);
     position: relative;
     overflow: hidden;
+    font-size: 0.9rem;
 }
 
 .nav-item::before {
@@ -248,12 +249,13 @@ body::before {
     height: 100%;
     background: var(--gradient-cyan);
     transition: width var(--transition-normal);
+    border-radius: var(--radius-lg);
     z-index: -1;
 }
 
 .nav-item:hover {
-    color: var(--text-primary);
-    transform: translateX(8px);
+    color: white;
+    transform: translateX(4px);
 }
 
 .nav-item:hover::before {
@@ -261,27 +263,32 @@ body::before {
 }
 
 .nav-item.active {
-    color: var(--text-primary);
-    background: var(--glass-bg);
-    box-shadow: var(--shadow-glow);
+    color: white;
+    background: var(--gradient-cyan);
+    box-shadow: 0 4px 16px rgba(0, 212, 255, 0.3);
+    font-weight: 600;
 }
 
 .nav-item.active::before {
-    width: 4px;
+    width: 0;
 }
 
 .nav-icon {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     transition: transform var(--transition-fast);
+    width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .nav-item:hover .nav-icon {
-    transform: scale(1.2);
+    transform: scale(1.1);
 }
 
 .nav-text {
-    font-weight: 600;
-    font-size: 0.95rem;
+    font-weight: 500;
+    font-size: 0.9rem;
 }
 
 /* Sidebar Footer - Live AQI */
@@ -908,8 +915,9 @@ body::before {
 
 .health-groups-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--spacing-lg);
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-xl);
+    margin-top: var(--spacing-lg);
 }
 
 .health-group-card {

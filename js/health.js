@@ -5,31 +5,339 @@ class HealthManager {
     }
 
     // Initialize health page
-    init() {
-        this.updateHealthPage();
-        this.updateSaferRoutes();
+    async init() {
+        await this.updateHealthPage();
     }
 
     // Update health page
-    updateHealthPage() {
-        const currentData = window.AirQualityAPI.generateCurrentData();
+    async updateHealthPage() {
+        // Fetch real-time data from dual API
+        const currentData = await window.AirQualityAPI.fetchRealTimeData(window.AirQualityAPI.currentLocation);
         this.currentAQI = currentData.aqi;
-        const recommendations = window.AirQualityAPI.getHealthRecommendations(this.currentAQI);
+
+        // Update group-specific cards
+        this.updateGroupCards(this.currentAQI);
 
         // Update alert card
         this.updateAlertCard(this.currentAQI);
 
-        // Update group-specific advice
-        this.updateGroupAdvice(recommendations);
-
-        // Update activities
-        this.updateActivities(recommendations);
-
-        // Update protection measures
-        this.updateProtectionMeasures(recommendations);
-
         // Update health index
         this.updateHealthIndex(this.currentAQI);
+    }
+
+    // Update group-specific cards with AQI-based recommendations
+    updateGroupCards(aqi) {
+        // For Children
+        const childrenAdvice = document.getElementById('childrenAdvice');
+        if (childrenAdvice) {
+            childrenAdvice.innerHTML = this.getChildrenRecommendations(aqi);
+        }
+
+        // For Elderly
+        const elderlyAdvice = document.getElementById('elderlyAdvice');
+        if (elderlyAdvice) {
+            elderlyAdvice.innerHTML = this.getElderlyRecommendations(aqi);
+        }
+
+        // For Patients
+        const patientsAdvice = document.getElementById('patientsAdvice');
+        if (patientsAdvice) {
+            patientsAdvice.innerHTML = this.getPatientsRecommendations(aqi);
+        }
+    }
+
+    // Get Children recommendations based on AQI
+    getChildrenRecommendations(aqi) {
+        if (aqi <= 50) {
+            return `
+                <div class="health-advice-item">
+                    <div class="advice-icon">🏃</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Outdoor Play Encouraged</div>
+                        <div class="advice-desc">Safe for all outdoor activities</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">😊</div>
+                    <div class="advice-content">
+                        <div class="advice-title">No Restrictions</div>
+                        <div class="advice-desc">Perfect air quality for kids</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">🏠</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Indoor Activities</div>
+                        <div class="advice-desc">Optional, outdoor is great</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">💧</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Stay Hydrated</div>
+                        <div class="advice-desc">Ensure plenty of water intake</div>
+                    </div>
+                </div>
+            `;
+        } else if (aqi <= 100) {
+            return `
+                <div class="health-advice-item">
+                    <div class="advice-icon">🏃</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Limit Outdoor Play</div>
+                        <div class="advice-desc">Reduce playtime when AQI > 100</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">😷</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Child-Sized Masks</div>
+                        <div class="advice-desc">Use properly fitted N95 masks</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">🏠</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Indoor Activities</div>
+                        <div class="advice-desc">Encourage indoor games and hobbies</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">💧</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Stay Hydrated</div>
+                        <div class="advice-desc">Ensure plenty of water intake</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="health-advice-item">
+                    <div class="advice-icon">🚫</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Limit Outdoor Play</div>
+                        <div class="advice-desc">Reduce playtime when AQI > 100</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">😷</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Child-Sized Masks</div>
+                        <div class="advice-desc">Use properly fitted N95 masks</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">🏠</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Indoor Activities</div>
+                        <div class="advice-desc">Encourage indoor games and hobbies</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">💧</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Stay Hydrated</div>
+                        <div class="advice-desc">Ensure plenty of water intake</div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // Get Elderly recommendations based on AQI
+    getElderlyRecommendations(aqi) {
+        if (aqi <= 50) {
+            return `
+                <div class="health-advice-item">
+                    <div class="advice-icon">🚶</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Morning Walks Encouraged</div>
+                        <div class="advice-desc">Safe for outdoor exercise</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">💊</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Regular Medications</div>
+                        <div class="advice-desc">Continue routine as normal</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">💨</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Fresh Air</div>
+                        <div class="advice-desc">Open windows for ventilation</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">📞</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Emergency Contacts</div>
+                        <div class="advice-desc">Keep doctor's number accessible</div>
+                    </div>
+                </div>
+            `;
+        } else if (aqi <= 150) {
+            return `
+                <div class="health-advice-item">
+                    <div class="advice-icon">⚠️</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Avoid Morning Walks</div>
+                        <div class="advice-desc">Skip outdoor exercise when AQI > 150</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">💊</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Keep Medications Ready</div>
+                        <div class="advice-desc">Have inhalers and emergency meds handy</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">💨</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Use Air Purifiers</div>
+                        <div class="advice-desc">Keep indoor air clean and filtered</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">📞</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Emergency Contacts</div>
+                        <div class="advice-desc">Keep doctor's number accessible</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="health-advice-item">
+                    <div class="advice-icon">🚫</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Avoid Morning Walks</div>
+                        <div class="advice-desc">Skip outdoor exercise when AQI > 150</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">💊</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Keep Medications Ready</div>
+                        <div class="advice-desc">Have inhalers and emergency meds handy</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">💨</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Use Air Purifiers</div>
+                        <div class="advice-desc">Keep indoor air clean and filtered</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">📞</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Emergency Contacts</div>
+                        <div class="advice-desc">Keep doctor's number accessible</div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // Get Patients recommendations based on AQI
+    getPatientsRecommendations(aqi) {
+        if (aqi <= 50) {
+            return `
+                <div class="health-advice-item">
+                    <div class="advice-icon">🫁</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Respiratory Patients</div>
+                        <div class="advice-desc">Safe for moderate outdoor activities</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">❤️</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Heart Patients</div>
+                        <div class="advice-desc">Normal activity levels permitted</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">🤧</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Allergy Sufferers</div>
+                        <div class="advice-desc">Monitor pollen levels separately</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">🏥</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Seek Medical Help</div>
+                        <div class="advice-desc">Visit doctor if symptoms worsen</div>
+                    </div>
+                </div>
+            `;
+        } else if (aqi <= 150) {
+            return `
+                <div class="health-advice-item">
+                    <div class="advice-icon">🫁</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Respiratory Patients</div>
+                        <div class="advice-desc">Stay indoors, use nebulizers as prescribed</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">❤️</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Heart Patients</div>
+                        <div class="advice-desc">Avoid any strenuous activity outdoors</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">🤧</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Allergy Sufferers</div>
+                        <div class="advice-desc">Take antihistamines as recommended</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">🏥</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Seek Medical Help</div>
+                        <div class="advice-desc">Visit doctor if symptoms worsen</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="health-advice-item">
+                    <div class="advice-icon">🫁</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Respiratory Patients</div>
+                        <div class="advice-desc">Stay indoors, use nebulizers as prescribed</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">❤️</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Heart Patients</div>
+                        <div class="advice-desc">Avoid any strenuous activity outdoors</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">🤧</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Allergy Sufferers</div>
+                        <div class="advice-desc">Take antihistamines as recommended</div>
+                    </div>
+                </div>
+                <div class="health-advice-item">
+                    <div class="advice-icon">🏥</div>
+                    <div class="advice-content">
+                        <div class="advice-title">Seek Medical Help</div>
+                        <div class="advice-desc">Visit doctor if symptoms worsen</div>
+                    </div>
+                </div>
+            `;
+        }
     }
 
     // Update alert card
@@ -73,100 +381,6 @@ class HealthManager {
         if (aqi <= 200) return 'Everyone should reduce prolonged outdoor exertion.';
         if (aqi <= 300) return 'Health alert: everyone may experience health effects.';
         return 'Health emergency: everyone should avoid outdoor activities.';
-    }
-
-    // Update group-specific advice
-    updateGroupAdvice(recommendations) {
-        const groups = {
-            childrenAdvice: { text: recommendations.children, icon: '👶' },
-            elderlyAdvice: { text: recommendations.elderly, icon: '👴' },
-            pregnantAdvice: { text: recommendations.pregnant, icon: '🤰' },
-            patientsAdvice: { text: recommendations.patients, icon: '🏥' }
-        };
-
-        Object.keys(groups).forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.innerHTML = `
-                    <p style="color: var(--text-secondary); line-height: 1.8;">${groups[id].text}</p>
-                `;
-            }
-        });
-    }
-
-    // Update activities
-    updateActivities(recommendations) {
-        const container = document.getElementById('activitiesGrid');
-        if (!container) return;
-
-        container.innerHTML = '';
-
-        recommendations.activities.forEach(activity => {
-            const card = document.createElement('div');
-            card.className = 'activity-card';
-
-            let statusColor = '#10b981';
-            let statusText = 'Safe';
-
-            if (activity.status === 'caution') {
-                statusColor = '#fbbf24';
-                statusText = 'Use Caution';
-            } else if (activity.status === 'avoid') {
-                statusColor = '#ef4444';
-                statusText = 'Avoid';
-            } else if (activity.status === 'recommended') {
-                statusColor = '#00d4ff';
-                statusText = 'Recommended';
-            }
-
-            card.innerHTML = `
-                <div style="font-size: 2.5rem; text-align: center; margin-bottom: 1rem;">${activity.icon}</div>
-                <h4 style="text-align: center; margin-bottom: 0.5rem;">${activity.name}</h4>
-                <div style="text-align: center; padding: 0.5rem; background: ${statusColor}20; border-radius: 0.5rem;">
-                    <span style="color: ${statusColor}; font-weight: 600; font-size: 0.875rem;">${statusText}</span>
-                </div>
-            `;
-
-            container.appendChild(card);
-        });
-    }
-
-    // Update protection measures
-    updateProtectionMeasures(recommendations) {
-        const container = document.getElementById('protectionMeasures');
-        if (!container) return;
-
-        container.innerHTML = '';
-
-        if (recommendations.protection.length === 0) {
-            const card = document.createElement('div');
-            card.className = 'measure-card';
-            card.innerHTML = `
-                <div style="text-align: center;">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">✅</div>
-                    <p style="color: var(--text-secondary);">No special precautions needed. Enjoy your day!</p>
-                </div>
-            `;
-            container.appendChild(card);
-            return;
-        }
-
-        recommendations.protection.forEach((measure, index) => {
-            const card = document.createElement('div');
-            card.className = 'measure-card';
-
-            const icons = ['😷', '💨', '🪟', '💧', '🏥'];
-            const icon = icons[index % icons.length];
-
-            card.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div style="font-size: 2rem;">${icon}</div>
-                    <p style="color: var(--text-secondary); margin: 0;">${measure}</p>
-                </div>
-            `;
-
-            container.appendChild(card);
-        });
     }
 
     // Update health index visualization
@@ -216,98 +430,6 @@ class HealthManager {
         } else {
             return 'Health emergency: serious health effects for everyone. Stay indoors and use air purifiers. Seek medical attention if experiencing symptoms.';
         }
-    }
-
-    // Update safer routes
-    updateSaferRoutes() {
-        if (typeof RouteOptimizer === 'undefined') return;
-
-        const routeOptimizer = new RouteOptimizer();
-        const currentAQIData = [];
-
-        // Generate AQI data for multiple areas
-        const areas = ['Central Delhi', 'Dwarka', 'Noida', 'Gurugram', 'Ghaziabad', 'Anand Vihar'];
-        areas.forEach(area => {
-            const data = window.AirQualityAPI ? window.AirQualityAPI.generateCurrentData() : { aqi: 150 };
-            currentAQIData.push({ area, aqi: data.aqi });
-        });
-
-        // Get safer routes
-        const routesSuggestion = routeOptimizer.findSaferRoutes(null, null, currentAQIData);
-
-        // Display routes
-        const routesGrid = document.getElementById('routesGrid');
-        if (routesGrid) {
-            routesGrid.innerHTML = '';
-
-            // Show safest route
-            if (routesSuggestion.safest) {
-                const card = this.createRouteCard(routesSuggestion.safest, true);
-                routesGrid.appendChild(card);
-            }
-
-            // Show alternative routes
-            routesSuggestion.alternatives.forEach(route => {
-                const card = this.createRouteCard(route, false);
-                routesGrid.appendChild(card);
-            });
-        }
-
-        // Display best travel times
-        const forecastData = window.AirQualityAPI ? window.AirQualityAPI.generateForecast() : { current: { aqi: 150 } };
-        const bestTimes = routeOptimizer.getBestTravelTimes(forecastData);
-
-        const bestTimesDisplay = document.getElementById('bestTimesDisplay');
-        if (bestTimesDisplay) {
-            bestTimesDisplay.innerHTML = `
-                <h4>⏰ Best Times to Travel</h4>
-                <p style="color: var(--text-secondary); margin-bottom: 1rem;">${bestTimes.recommendation}</p>
-                <div class="time-slots">
-                    ${bestTimes.bestTimes.map(time => `
-                        <div class="time-slot ${time.recommended ? 'recommended' : ''}">
-                            <div class="time-slot-time">${time.time}</div>
-                            <div class="time-slot-aqi">AQI: ${time.aqi}</div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-    }
-
-    // Create route card
-    createRouteCard(route, isSafest) {
-        const card = document.createElement('div');
-        card.className = `route-card ${isSafest ? 'safest' : ''}`;
-
-        card.innerHTML = `
-            <div class="route-header">
-                <div class="route-name">${route.name}</div>
-                ${isSafest ? '<div class="route-badge" style="background: var(--aqi-good); color: white; padding: 0.25rem 0.75rem; border-radius: 0.5rem;">✓ Safest</div>' : ''}
-            </div>
-            <div class="route-stats">
-                <div class="route-stat-item">
-                    <span class="route-stat-label">Distance:</span>
-                    <span class="route-stat-value">${route.distance} km</span>
-                </div>
-                <div class="route-stat-item">
-                    <span class="route-stat-label">Est. Time:</span>
-                    <span class="route-stat-value">${route.travelTime} min</span>
-                </div>
-                <div class="route-stat-item">
-                    <span class="route-stat-label">Avg AQI:</span>
-                    <span class="route-stat-value" style="color: ${this.getAQIColor(route.averageAQI)}">${route.averageAQI}</span>
-                </div>
-                <div class="route-stat-item">
-                    <span class="route-stat-label">Risk Level:</span>
-                    <span class="route-stat-value">${route.riskLevel.icon} ${route.riskLevel.level}</span>
-                </div>
-            </div>
-            <div class="route-recommendation">
-                ${route.recommendation}
-            </div>
-        `;
-
-        return card;
     }
 
     // Get AQI color

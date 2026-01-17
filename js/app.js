@@ -282,8 +282,9 @@ class VaayuSaathiApp {
     }
 
     // Update sidebar live AQI
-    updateSidebarAQI() {
-        const currentData = window.AirQualityAPI.generateCurrentData();
+    async updateSidebarAQI() {
+        // Fetch real-time data from dual API
+        const currentData = await window.AirQualityAPI.fetchRealTimeData(window.AirQualityAPI.currentLocation);
         const category = window.AirQualityAPI.getAQICategory(currentData.aqi);
 
         const sidebarAQI = document.getElementById('sidebar-aqi');

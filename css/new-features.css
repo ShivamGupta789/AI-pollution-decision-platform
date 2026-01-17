@@ -714,3 +714,61 @@ body.dark-theme .time-slot {
         grid-template-columns: repeat(3, 1fr);
     }
 }
+
+/* ============================================
+   HEALTH ADVICE CARDS
+   ============================================ */
+
+.health-advice-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-sm);
+    transition: all var(--transition-fast);
+}
+
+body.dark-theme .health-advice-item {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.health-advice-item:hover {
+    background: rgba(0, 0, 0, 0.04);
+    transform: translateX(4px);
+}
+
+body.dark-theme .health-advice-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.advice-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--glass-bg);
+    border-radius: var(--radius-md);
+}
+
+.advice-content {
+    flex: 1;
+}
+
+.advice-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+    color: var(--text-primary);
+}
+
+.advice-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+

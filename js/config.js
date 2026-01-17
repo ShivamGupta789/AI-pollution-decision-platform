@@ -1,15 +1,28 @@
-// OpenWeather API Configuration
+// Dual API Configuration (WeatherAPI + WAQI)
 const API_CONFIG = {
-    // OpenWeather API Configuration
-    OPENWEATHER: {
-        // 👇 PASTE YOUR API KEY HERE (replace the text below)
-        API_KEY: 'ed0c918deb2c4f6daeca19a073b0e993',
+    // WeatherAPI.com Configuration (for weather data)
+    WEATHERAPI: {
+        API_KEY: '5d659c90699942afb11132603261701',
+        BASE_URL: 'https://api.weatherapi.com/v1',
+        ENABLED: true
+    },
 
-        // API Endpoints (Don't change these)
-        BASE_URL: 'https://api.openweathermap.org/data/2.5',
-        AIR_POLLUTION_URL: 'https://api.openweathermap.org/data/2.5/air_pollution',
-
-        // 👇 SET THIS TO true AFTER ADDING YOUR API KEY
+    // WAQI (World Air Quality Index) Configuration
+    WAQI: {
+        TOKEN: '4b892755feb1b7272647fb9d922449caa050d6ad',
+        BASE_URL: 'https://api.waqi.info/feed',
+        // Station mapping for different Delhi NCR locations
+        STATIONS: {
+            'delhi': '@8179',        // Default ITO station
+            'dwarka': '@8179',
+            'rohini': '@8179',
+            'noida': '@8179',
+            'gurgaon': '@8179',
+            'ghaziabad': '@8179',
+            'faridabad': '@8179',
+            'greater_noida': '@8179',
+            'anand_vihar': '@8179'
+        },
         ENABLED: true
     },
 

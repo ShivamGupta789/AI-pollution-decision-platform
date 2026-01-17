@@ -23,10 +23,11 @@ class GlobalAlertSystem {
         setInterval(() => this.checkAlerts(), 300000); // Check every 5 minutes
     }
 
-    checkAlerts() {
+    async checkAlerts() {
         if (!window.AirQualityAPI) return;
 
-        const currentData = window.AirQualityAPI.generateCurrentData();
+        // Fetch real-time data from dual API
+        const currentData = await window.AirQualityAPI.fetchRealTimeData(window.AirQualityAPI.currentLocation);
         const aqi = currentData.aqi;
 
         if (aqi > 200) {

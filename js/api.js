@@ -1,4 +1,4 @@
-// API Module - Handles data generation and simulation
+// API Module - Handles data generation and real-time fetching
 class AirQualityAPI {
     constructor() {
         this.locations = ['delhi', 'noida', 'gurgaon', 'faridabad', 'ghaziabad'];
@@ -10,6 +10,49 @@ class AirQualityAPI {
             faridabad: { lat: 28.4089, lng: 77.3178 },
             ghaziabad: { lat: 28.6692, lng: 77.4538 }
         };
+    }
+
+    // Fetch real-time data from DualAPI (WeatherAPI + WAQI)
+    async fetchRealTimeData(locationKey = 'delhi') {
+        try {
+            if (!window.DualAPI) {
+                console.warn('⚠️ DualAPI not available, using simulated data');
+                return this.generateCurrentData();
+            }
+
+            console.log(`🔄 Fetching real-time data for ${locationKey}...`);
+            const data = await window.DualAPI.fetchCompleteData(locationKey);
+
+            if (!data) {
+                console.log('⚠️ DualAPI returned null, using simulated data');
+                return this.generateCurrentData();
+            }
+
+            // Transform to our format
+            return {
+                aqi: data.aqi || 0,
+                pm25: data.pollution?.pm25 || 0,
+                pm10: data.pollution?.pm10 || 0,
+                temperature: data.weather?.temperature || 0,
+                feelsLike: data.weather?.feelsLike || 0,
+                humidity: data.weather?.humidity || 0,
+                pressure: data.weather?.pressure || 0,
+                windSpeed: data.weather?.windSpeed || 0,
+                visibility: data.weather?.visibility || 0,
+                uvIndex: data.weather?.uvIndex || 0,
+                condition: data.weather?.condition?.text || 'Unknown',
+                emoji: data.weather?.emoji || '🌤️',
+                timestamp: data.timestamp || new Date().toISOString(),
+                location: locationKey,
+                source: data.source || 'dual_api',
+                category: data.category || this.getAQICategory(data.aqi || 0)
+            };
+
+        } catch (error) {
+            console.error('❌ Error fetching real-time data:', error);
+            console.log('🔄 Falling back to simulated data');
+            return this.generateCurrentData();
+        }
     }
 
     // Generate realistic AQI data
