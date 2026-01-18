@@ -159,7 +159,8 @@ class AQIForecaster {
             forecasts,
             trend: trend.direction,
             confidence,
-            explanation: this.generateForecastExplanation(forecasts, trend, confidence)
+            explanation: this.generateForecastExplanation(forecasts, trend, confidence),
+            source: 'rule_based'
         };
     }
 

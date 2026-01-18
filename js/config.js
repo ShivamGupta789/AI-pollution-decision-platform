@@ -13,15 +13,14 @@ const API_CONFIG = {
         BASE_URL: 'https://api.waqi.info/feed',
         // Station mapping for different Delhi NCR locations
         STATIONS: {
-            'delhi': '@8179',        // Default ITO station
-            'dwarka': '@8179',
-            'rohini': '@8179',
-            'noida': '@8179',
-            'gurgaon': '@8179',
-            'ghaziabad': '@8179',
-            'faridabad': '@8179',
-            'greater_noida': '@8179',
-            'anand_vihar': '@8179'
+            'delhi': '@2553',        // Default ITO station
+            'dwarka': '@10119',
+            'rohini': '@10117',
+            'noida': '@12466',
+            'gurgaon': '@12816',
+            'ghaziabad': '@11856',
+            'faridabad': '@12814',
+            'greater_noida': '@12463',
         },
         ENABLED: true
     },
@@ -29,14 +28,16 @@ const API_CONFIG = {
     // Delhi NCR Location Coordinates
     LOCATIONS: {
         'delhi': { lat: 28.6139, lon: 77.2090, name: 'Central Delhi' },
+        'cp': { lat: 28.6304, lon: 77.2177, name: 'Connaught Place' },
         'dwarka': { lat: 28.5921, lon: 77.0460, name: 'Dwarka' },
-        'rohini': { lat: 28.7496, lon: 77.0669, name: 'Rohini' },
+        'palam': { lat: 28.5843, lon: 77.0803, name: 'Palam' },
+        'atul': { lat: 28.4900, lon: 77.0800, name: 'Atul Road' }, // Approx loc
+        'saket': { lat: 28.5244, lon: 77.2181, name: 'Saket' },
         'noida': { lat: 28.5355, lon: 77.3910, name: 'Noida' },
         'gurgaon': { lat: 28.4595, lon: 77.0266, name: 'Gurugram' },
         'ghaziabad': { lat: 28.6692, lon: 77.4538, name: 'Ghaziabad' },
         'faridabad': { lat: 28.4089, lon: 77.3178, name: 'Faridabad' },
         'greater_noida': { lat: 28.4744, lon: 77.5040, name: 'Greater Noida' },
-        'anand_vihar': { lat: 28.6469, lon: 77.3162, name: 'Anand Vihar' }
     },
 
     // Smart Fallback Settings

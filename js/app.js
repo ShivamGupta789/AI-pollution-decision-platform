@@ -133,12 +133,38 @@ class VaayuSaathiApp {
     }
 
     // Initialize forecasting page
-    initForecastingPage() {
-        const forecastData = window.AirQualityAPI.generateForecast();
+    async initForecastingPage() {
+        // Try to get current data for backend
+        let forecastData;
+        let currentData;
+
+        // Fetch current data first (used for both forecast generation and weather grid)
+        try {
+            // Use DualAPI directly if available for best real-time data
+            if (window.DualAPI) {
+                currentData = await window.DualAPI.fetchCompleteData(this.currentLocation);
+            } else {
+                currentData = await window.AirQualityAPI.fetchRealTimeData(this.currentLocation);
+            }
+        } catch (e) {
+            console.error("Error fetching current data for forecast page:", e);
+            // Fallback to simulated
+            currentData = window.AirQualityAPI.generateCurrentData();
+        }
+
+        if (window.ForecastBackend && window.ForecastBackend.isAvailable) {
+            forecastData = await window.ForecastBackend.getForecast(currentData, 'hourly');
+        }
+
+        // Fallback to local generation if backend unavailable
+        if (!forecastData) {
+            forecastData = window.AirQualityAPI.generateForecast();
+        }
+
         window.ChartsManager.createForecastChart('forecastChart', forecastData);
 
-        // Weather grid
-        this.updateWeatherGrid();
+        // Weather grid - Pass real data
+        this.updateWeatherGrid(currentData);
 
         // Prediction details
         this.updatePredictionDetails(forecastData);
@@ -146,24 +172,69 @@ class VaayuSaathiApp {
         // Setup forecast option buttons
         const forecastBtns = document.querySelectorAll('.forecast-options .filter-btn');
         forecastBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', async () => {
                 forecastBtns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                // Would update forecast based on selection
+
+                // Get forecast type
+                const forecastType = btn.dataset.forecast;
+                let newForecastData;
+
+                // Try backend first
+                if (window.ForecastBackend && window.ForecastBackend.isAvailable) {
+                    newForecastData = await window.ForecastBackend.getForecast(currentData, forecastType);
+                }
+
+                // Fallback to local generation
+                if (!newForecastData) {
+                    switch (forecastType) {
+                        case 'hourly':
+                            newForecastData = window.AirQualityAPI.generateForecast(48);
+                            break;
+                        case 'daily':
+                            newForecastData = window.AirQualityAPI.generateDailyForecast(7);
+                            break;
+                        case 'extended':
+                            newForecastData = window.AirQualityAPI.generateDailyForecast(14);
+                            break;
+                        default:
+                            newForecastData = window.AirQualityAPI.generateForecast(48);
+                    }
+                }
+
+                // Update the chart
+                window.ChartsManager.createForecastChart('forecastChart', newForecastData);
+
+                // Update prediction details
+                this.updatePredictionDetails(newForecastData);
             });
         });
     }
 
     // Update weather grid
-    updateWeatherGrid() {
+    updateWeatherGrid(data) {
         const weatherGrid = document.getElementById('weatherGrid');
         if (!weatherGrid) return;
 
+        // Default to placeholders if data is missing
+        const windSpeed = data?.weather?.windSpeed || data?.windSpeed || '--';
+        const temp = data?.weather?.temperature || data?.temperature || '--';
+        const humidity = data?.weather?.humidity || data?.humidity || '--';
+        const pressure = data?.weather?.pressure || data?.pressure || '--';
+
+        // Add units if missing (simulated data might optionally include it, but usually raw numbers)
+        // DualAPI returns raw numbers.
+        // Check if values are numbers to append units safely
+        const windDisplay = typeof windSpeed === 'number' ? `${windSpeed} km/h` : windSpeed;
+        const tempDisplay = typeof temp === 'number' ? `${temp}°C` : temp;
+        const humDisplay = typeof humidity === 'number' ? `${humidity}%` : humidity;
+        const pressDisplay = typeof pressure === 'number' ? `${pressure} hPa` : pressure;
+
         const weatherFactors = [
-            { name: 'Wind Speed', value: '12 km/h', impact: 'Helps disperse pollutants', icon: '💨' },
-            { name: 'Temperature', value: '24°C', impact: 'Moderate temperature', icon: '🌡️' },
-            { name: 'Humidity', value: '65%', impact: 'Higher humidity can trap pollutants', icon: '💧' },
-            { name: 'Pressure', value: '1013 hPa', impact: 'Stable atmospheric conditions', icon: '⏱️' }
+            { name: 'Wind Speed', value: windDisplay, impact: 'Helps disperse pollutants', icon: '💨' },
+            { name: 'Temperature', value: tempDisplay, impact: 'Moderate temperature', icon: '🌡️' },
+            { name: 'Humidity', value: humDisplay, impact: 'Higher humidity can trap pollutants', icon: '💧' },
+            { name: 'Pressure', value: pressDisplay, impact: 'Stable atmospheric conditions', icon: '⏱️' }
         ];
 
         weatherGrid.innerHTML = '';
@@ -197,12 +268,7 @@ class VaayuSaathiApp {
 
         container.innerHTML = `
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; padding: 2rem;">
-                <div style="text-align: center;">
-                    <div style="font-size: 2.5rem; font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.5rem;">
-                        ${avgAQI}
-                    </div>
-                    <div style="color: var(--text-secondary);">24-Hour Average</div>
-                </div>
+
                 <div style="text-align: center;">
                     <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">
                         ${trend === 'Improving' ? '📉' : '📈'}

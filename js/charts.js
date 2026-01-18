@@ -93,12 +93,22 @@ class ChartsManager {
             this.charts[canvasId].destroy();
         }
 
-        const labels = forecastData.slice(0, 24).map(d => {
-            const date = new Date(d.time);
-            return date.getHours() + ':00';
+        // Determine if this is hourly or daily data
+        const isHourly = forecastData[0] && forecastData[0].hour !== undefined && forecastData[0].hour !== null;
+
+        // Generate appropriate labels
+        const labels = forecastData.map(d => {
+            if (isHourly) {
+                // Hourly: show hour
+                const date = new Date(d.time);
+                return date.getHours() + ':00';
+            } else {
+                // Daily: show day or date
+                return d.day || d.date || new Date(d.time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
         });
 
-        const data = forecastData.slice(0, 24).map(d => d.aqi);
+        const data = forecastData.map(d => d.aqi);
 
         this.charts[canvasId] = new Chart(ctx, {
             type: 'line',
@@ -122,18 +132,35 @@ class ChartsManager {
                 plugins: {
                     legend: {
                         display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return 'AQI: ' + context.parsed.y;
+                            }
+                        }
                     }
                 },
                 scales: {
                     y: {
-                        beginAtZero: true,
+                        min: 0,
+                        max: 1000,
                         grid: {
                             color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            color: '#4a5568',
+                            stepSize: 100
                         }
                     },
                     x: {
                         grid: {
                             display: false
+                        },
+                        ticks: {
+                            color: '#4a5568',
+                            maxRotation: 45,
+                            minRotation: 0
                         }
                     }
                 }
@@ -175,11 +202,12 @@ class ChartsManager {
                     legend: {
                         position: 'right',
                         labels: {
-                            padding: 15,
+                            padding: 25, // Increased padding
                             font: {
-                                size: 12
+                                size: 18 // Increased size (1.5x of 12)
                             },
-                            color: '#4a5568'
+                            color: '#4a5568',
+                            boxWidth: 20 // Slightly larger box
                         }
                     },
                     tooltip: {

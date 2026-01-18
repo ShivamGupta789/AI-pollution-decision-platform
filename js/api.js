@@ -84,15 +84,17 @@ class AirQualityAPI {
         return { name: 'Hazardous', class: 'status-hazardous' };
     }
 
-    // Generate forecast data for next 48 hours
-    generateForecast() {
+    // Generate forecast data for next N hours (AQI range: 100-1000)
+    // Uses deterministic patterns for consistent predictions
+    generateForecast(hours = 48) {
         const forecast = [];
-        let baseAQI = 120;
+        let baseAQI = 200; // Start at 200 (moderate)
 
-        for (let i = 0; i < 48; i++) {
-            // Add some variation and trends
-            const variation = Math.sin(i / 6) * 30 + Math.random() * 40;
-            const aqi = Math.max(50, Math.min(350, baseAQI + variation));
+        for (let i = 0; i < hours; i++) {
+            // Use sine wave for natural daily variation (less random)
+            const dailyCycle = Math.sin(i / 6) * 100;  // Daily pattern
+            const trendFactor = i * 2;  // Slight upward trend
+            const aqi = Math.max(100, Math.min(1000, baseAQI + dailyCycle + trendFactor));
 
             forecast.push({
                 time: new Date(Date.now() + i * 3600000).toISOString(),
@@ -100,7 +102,33 @@ class AirQualityAPI {
                 hour: new Date(Date.now() + i * 3600000).getHours()
             });
 
-            baseAQI = aqi;
+            baseAQI = aqi * 0.95 + 200 * 0.05; // Gradual return to baseline
+        }
+
+        return forecast;
+    }
+
+    // Generate daily forecast data (for 7 or 14 days, AQI range: 100-1000)
+    generateDailyForecast(days = 7) {
+        const forecast = [];
+        let baseAQI = 200; // Start at 200 (moderate)
+
+        for (let i = 0; i < days; i++) {
+            // Use sine wave for weekly variation pattern
+            const weeklyCycle = Math.sin(i / 3) * 120;
+            const trendFactor = i * 15;  // Gradual trend
+            const aqi = Math.max(100, Math.min(1000, baseAQI + weeklyCycle + trendFactor));
+
+            const date = new Date(Date.now() + i * 86400000);
+
+            forecast.push({
+                time: date.toISOString(),
+                aqi: Math.round(aqi),
+                day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+                date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            });
+
+            baseAQI = aqi * 0.9 + 200 * 0.1; // Gradual return to baseline
         }
 
         return forecast;

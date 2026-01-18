@@ -24,6 +24,8 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/new-features.css">
     <link rel="stylesheet" href="css/policy-simulator.css">
+    <link rel="stylesheet" href="css/health-forecast.css">
+    <link rel="stylesheet" href="css/route-planner.css">
 </head>
 
 <body>
@@ -56,6 +58,10 @@
             <a href="#policy" class="nav-item" data-page="policy">
                 <span class="nav-icon">⚖️</span>
                 <span class="nav-text">Policy Simulation</span>
+            </a>
+            <a href="#route" class="nav-item" data-page="route">
+                <span class="nav-icon">🗺️</span>
+                <span class="nav-text">Route Planner</span>
             </a>
             <a href="#analytics" class="nav-item" data-page="analytics">
                 <span class="nav-icon">📉</span>
@@ -164,23 +170,25 @@
                             <div class="progress-fill" id="tempProgress"></div>
                         </div>
                     </div>
+
+                    <!-- Visibility Card -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-icon">👁️</span>
+                            <span class="metric-label">Visibility</span>
+                        </div>
+                        <div class="metric-value small" id="visibilityValue">--</div>
+                        <div class="metric-unit">km</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="visibilityProgress"></div>
+                        </div>
+                    </div>
                 </section>
 
 
 
                 <!-- Forecast Section -->
-                <section class="dashboard-section">
-                    <div class="section-card">
-                        <div class="section-header">
-                            <h2>📈 AQI Forecast - Next 48 Hours</h2>
-                        </div>
-                        <div class="forecast-scroll">
-                            <div class="forecast-timeline" id="forecastTimeline">
-                                <!-- Forecast cards will be populated by JS -->
-                            </div>
-                        </div>
-                    </div>
-                </section>
+
 
                 <!-- Live AQI Widget -->
                 <section class="dashboard-section">
@@ -276,12 +284,20 @@
 
             <!-- HEALTH INSIGHTS PAGE -->
             <div class="page" id="health-page">
+                <!-- Daily Health Forecast Section -->
                 <section class="dashboard-section">
-                    <div class="section-card alert-card" id="healthAlert">
-                        <!-- Alert will be dynamically added -->
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h2>📅 Daily Health Forecast</h2>
+                            <span class="forecast-update-time" id="forecastUpdateTime"></span>
+                        </div>
+                        <div class="daily-forecast-container" id="dailyHealthForecast">
+                            <!-- Forecast will be dynamically populated by JS -->
+                        </div>
                     </div>
                 </section>
 
+                <!-- Group-Specific Recommendations -->
                 <section class="dashboard-section">
                     <div class="section-card">
                         <div class="section-header">
@@ -307,12 +323,7 @@
                     </div>
                 </section>
 
-
-
-
-
-
-
+                <!-- Air Quality Health Index -->
                 <section class="dashboard-section">
                     <div class="section-card">
                         <div class="section-header">
@@ -323,6 +334,139 @@
                         </div>
                     </div>
                 </section>
+            </div>
+
+            <!-- ROUTE PLANNER PAGE -->
+            <div class="page" id="route-page">
+                <!-- Page Header -->
+                <div class="policy-header">
+                    <h1>Pollution Route Planner</h1>
+                    <p class="policy-subtitle">Plan your journey through Delhi-NCR while avoiding pollution hotspots for
+                        a safer commute.</p>
+                </div>
+
+                <div class="route-grid">
+                    <!-- Controls Panel -->
+                    <div class="section-card route-controls">
+                        <div class="section-header">
+                            <h2>Journey Details</h2>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Start Location</label>
+                            <select id="startLocation" class="route-select">
+                                <option value="delhi" selected>Central Delhi (ITO)</option>
+                                <option value="dwarka">Dwarka</option>
+                                <option value="rohini">Rohini</option>
+                                <option value="noida">Noida</option>
+                                <option value="gurgaon">Gurugram</option>
+                                <option value="ghaziabad">Ghaziabad</option>
+                                <option value="faridabad">Faridabad</option>
+                                <option value="greater_noida">Greater Noida</option>
+                                <option value="anand_vihar">Anand Vihar</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Destination</label>
+                            <select id="endLocation" class="route-select">
+                                <option value="dwarka" selected>Dwarka</option>
+                                <option value="delhi">Central Delhi (ITO)</option>
+                                <option value="rohini">Rohini</option>
+                                <option value="noida">Noida</option>
+                                <option value="gurgaon">Gurugram</option>
+                                <option value="ghaziabad">Ghaziabad</option>
+                                <option value="faridabad">Faridabad</option>
+                                <option value="greater_noida">Greater Noida</option>
+                                <option value="anand_vihar">Anand Vihar</option>
+                            </select>
+                        </div>
+
+                        <div class="route-btn-group">
+                            <button id="btnCalculateRoute" class="btn-plan">Find Safe Route</button>
+                            <button id="btnResetRoute" class="btn-reset">Reset</button>
+                        </div>
+
+                        <div id="routeLoading" class="route-loading">
+                            <div class="loading-spinner"></div>
+                            <p>Calculating optimal path based on real-time AQI...</p>
+                        </div>
+                    </div>
+
+                    <!-- Results Panel -->
+                    <div id="routeResults" class="route-viz-container">
+                        <!-- Visualization -->
+                        <div class="route-diagram-card">
+                            <h3 style="margin-bottom: 1.5rem;">Route Visualization</h3>
+                            <div id="routePathDisplay" class="route-path">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Route Comparison -->
+                        <div class="comparison-grid">
+                            <div class="route-option-card clean">
+                                <div class="route-option-header">
+                                    <span>🌿</span>
+                                    <h3>Clean Route (Recommended)</h3>
+                                </div>
+                                <div class="stats-grid">
+                                    <div class="stat-item">
+                                        <div id="cleanDistance" class="stat-value">-</div>
+                                        <div class="stat-label">Distance</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div id="cleanTime" class="stat-value">-</div>
+                                        <div class="stat-label">Time</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div id="cleanVisibility" class="stat-value">-</div>
+                                        <div class="stat-label">Visibility</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-value" style="color: #059669">0</div>
+                                        <div class="stat-label">Hazard Zones</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="route-option-card direct">
+                                <div class="route-option-header">
+                                    <span>🚗</span>
+                                    <h3>Direct Route</h3>
+                                </div>
+                                <div class="stats-grid">
+                                    <div class="stat-item">
+                                        <div id="directDistance" class="stat-value">-</div>
+                                        <div class="stat-label">Distance</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div id="directTime" class="stat-value">-</div>
+                                        <div class="stat-label">Time</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div id="directVisibility" class="stat-value">-</div>
+                                        <div class="stat-label">Visibility</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-value">3</div>
+                                        <div class="stat-label">Hazard Zones</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pollution Zones -->
+                        <div class="section-card">
+                            <div class="section-header">
+                                <h2>⚠️ Pollution Hotspots to Avoid</h2>
+                            </div>
+                            <div id="hazardZonesgrid" class="hazard-zones-grid">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- POLICY SIMULATION PAGE -->
@@ -472,11 +616,13 @@
     <script src="js/pollution-engine.js"></script>
     <script src="js/policy-simulator.js"></script>
     <script src="js/aqi-forecaster.js"></script>
+    <script src="js/forecast-backend-client.js"></script>
     <script src="js/risk-detector.js"></script>
     <script src="js/health-advisor.js"></script>
 
     <!-- New Feature Modules -->
     <script src="js/route-optimizer.js"></script>
+    <script src="js/route-planner.js"></script>
     <script src="js/source-visualizer.js"></script>
     <script src="js/policy-dashboard.js"></script>
     <script src="js/policy-simulator.js"></script>

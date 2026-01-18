@@ -75,6 +75,9 @@ class DashboardManager {
 
         // Temperature
         this.updateMetricCard('tempValue', 'tempProgress', data.temperature, 50);
+
+        // Visibility
+        this.updateMetricCard('visibilityValue', 'visibilityProgress', data.visibility || 10, 15);
     }
 
     // Update individual metric card

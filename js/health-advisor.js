@@ -284,6 +284,77 @@ class HealthAdvisor {
             saferAreas
         };
     }
+    /**
+     * Generate daily health tip based on hourly forecast
+     */
+    getDailyHealthTip(hourlyForecast) {
+        if (!hourlyForecast || hourlyForecast.length === 0) return null;
+
+        // Analyze next 12-18 hours (daytime focusing)
+        const relevantHours = hourlyForecast.slice(0, 18);
+
+        let bestWindow = null;
+        let worstWindow = null;
+        let bestAQI = 1000;
+        let worstAQI = 0;
+
+        // Simple analysis to find localized min/max windows
+        // Group by 2-hour blocks for meaningful activity windows
+        for (let i = 0; i < relevantHours.length - 1; i++) {
+            const avgAQI = (relevantHours[i].aqi + relevantHours[i + 1].aqi) / 2;
+            const hour = new Date(relevantHours[i].time).getHours();
+
+            // Skip sleeping hours for "best time" (e.g., 10 PM - 5 AM)
+            const isWakingHour = hour >= 5 && hour <= 22;
+
+            if (isWakingHour) {
+                if (avgAQI < bestAQI) {
+                    bestAQI = avgAQI;
+                    bestWindow = { start: hour, end: (hour + 2) % 24, aqi: Math.round(avgAQI) };
+                }
+                if (avgAQI > worstAQI) {
+                    worstAQI = avgAQI;
+                    worstWindow = { start: hour, end: (hour + 2) % 24, aqi: Math.round(avgAQI) };
+                }
+            }
+        }
+
+        // Generate Tip Text
+        let tipTitle = "Daily Health Forecast";
+        let tipMessage = "";
+        let tipIcon = "📅";
+        let tipColor = "#0284c7"; // Default blue
+
+        if (bestAQI <= 100) {
+            tipTitle = "Good Day for Outdoors";
+            tipMessage = `Plan outdoor activities today! The air quality is best around ${this.formatTime(bestWindow.start)} - ${this.formatTime(bestWindow.end)} (AQI ~${bestWindow.aqi}).`;
+            tipIcon = "🏃";
+            tipColor = "#10b981"; // Green
+        } else if (bestAQI <= 200) {
+            tipTitle = "Exercise Caution";
+            tipMessage = `Air quality is moderate. Best time for limited outdoor activity is ${this.formatTime(bestWindow.start)} - ${this.formatTime(bestWindow.end)}. Avoid peak pollution around ${this.formatTime(worstWindow.start)}.`;
+            tipIcon = "⚠️";
+            tipColor = "#f59e0b"; // Orange
+        } else {
+            tipTitle = "Stay Indoors Today";
+            tipMessage = `High pollution levels predicted all day (Peak: ~${worstAQI} AQI at ${this.formatTime(worstWindow.start)}). It's safest to stay indoors and use air purifiers.`;
+            tipIcon = "🏠";
+            tipColor = "#ef4444"; // Red
+        }
+
+        return {
+            title: tipTitle,
+            message: tipMessage,
+            icon: tipIcon,
+            color: tipColor
+        };
+    }
+
+    formatTime(hour) {
+        if (hour === 0) return "12 AM";
+        if (hour === 12) return "12 PM";
+        return hour > 12 ? `${hour - 12} PM` : `${hour} AM`;
+    }
 }
 
 // Export for use in other modules

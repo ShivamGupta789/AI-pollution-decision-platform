@@ -258,17 +258,20 @@
 
 /* Baseline AQI Card */
 .baseline-aqi-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
+    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+    /* Light blue gradient */
     border-radius: var(--radius-lg);
     padding: var(--spacing-xl);
     text-align: center;
+    border: none;
+    /* Remove border to match */
 }
 
 .baseline-aqi-card .aqi-label {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: #0c4a6e;
+    /* Dark blue text */
     letter-spacing: 0.5px;
     margin-bottom: var(--spacing-md);
 }
@@ -277,7 +280,8 @@
     font-size: 4rem;
     font-weight: 800;
     font-family: 'Outfit', sans-serif;
-    color: #6b7280;
+    color: #0ea5e9;
+    /* Blue value color */
 }
 
 /* Projected AQI Card */

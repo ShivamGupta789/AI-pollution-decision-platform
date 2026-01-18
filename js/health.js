@@ -15,6 +15,9 @@ class HealthManager {
         const currentData = await window.AirQualityAPI.fetchRealTimeData(window.AirQualityAPI.currentLocation);
         this.currentAQI = currentData.aqi;
 
+        // Update daily health forecast
+        this.updateDailyHealthForecast();
+
         // Update group-specific cards
         this.updateGroupCards(this.currentAQI);
 
@@ -23,6 +26,150 @@ class HealthManager {
 
         // Update health index
         this.updateHealthIndex(this.currentAQI);
+    }
+
+    // Update daily health forecast with hourly breakdown
+    updateDailyHealthForecast() {
+        const forecastContainer = document.getElementById('dailyHealthForecast');
+        const updateTimeElement = document.getElementById('forecastUpdateTime');
+
+        if (!forecastContainer) return;
+
+        // Get hourly forecast data
+        const hourlyForecast = window.AirQualityAPI.generateForecast(24);
+
+        // Update last update time
+        if (updateTimeElement) {
+            const now = new Date();
+            updateTimeElement.textContent = `Updated: ${now.toLocaleTimeString()}`;
+        }
+
+        // Generate hourly breakdown HTML
+        let html = '<div class="hourly-forecast-grid">';
+
+        // Group hours into time periods for better organization
+        const periods = [
+            { name: 'Morning', icon: '🌅', hours: [6, 7, 8, 9, 10, 11] },
+            { name: 'Afternoon', icon: '☀️', hours: [12, 13, 14, 15, 16, 17] },
+            { name: 'Evening', icon: '🌆', hours: [18, 19, 20, 21] },
+            { name: 'Night', icon: '🌙', hours: [22, 23, 0, 1, 2, 3, 4, 5] }
+        ];
+
+        periods.forEach(period => {
+            const periodData = hourlyForecast.filter((forecast, idx) => {
+                const hour = new Date(forecast.time).getHours();
+                return period.hours.includes(hour);
+            });
+
+            if (periodData.length === 0) return;
+
+            // Calculate period average AQI
+            const avgAQI = Math.round(periodData.reduce((sum, d) => sum + d.aqi, 0) / periodData.length);
+            const maxAQI = Math.max(...periodData.map(d => d.aqi));
+            const minAQI = Math.min(...periodData.map(d => d.aqi));
+
+            const category = this.getAQICategory(avgAQI);
+            const advice = this.getTimeBasedAdvice(avgAQI, period.name);
+
+            html += `
+                <div class="forecast-period-card" style="border-left: 4px solid ${category.color}">
+                    <div class="period-header">
+                        <span class="period-icon">${period.icon}</span>
+                        <h3>${period.name}</h3>
+                    </div>
+                    <div class="period-aqi">
+                        <div class="aqi-range">
+                            <span class="aqi-value" style="color: ${category.color}">${avgAQI}</span>
+                            <span class="aqi-label">Avg AQI</span>
+                        </div>
+                        <div class="aqi-minmax">
+                            <span>Range: ${minAQI} - ${maxAQI}</span>
+                        </div>
+                    </div>
+                    <div class="period-status ${category.class}">
+                        ${category.name}
+                    </div>
+                    <div class="period-advice">
+                        <strong>Recommendation:</strong> ${advice.activity}
+                    </div>
+                    <div class="period-details">
+                        ${advice.details}
+                    </div>
+                </div>
+            `;
+        });
+
+        html += '</div>';
+
+        // Add summary card
+        const bestPeriod = periods.reduce((best, period) => {
+            const periodData = hourlyForecast.filter((_, idx) => {
+                const hour = new Date(hourlyForecast[idx].time).getHours();
+                return period.hours.includes(hour);
+            });
+            if (periodData.length === 0) return best;
+            const avgAQI = periodData.reduce((sum, d) => sum + d.aqi, 0) / periodData.length;
+            return !best || avgAQI < best.aqi ? { period, aqi: avgAQI } : best;
+        }, null);
+
+        if (bestPeriod) {
+            html += `
+                <div class="forecast-summary">
+                    <div class="summary-icon">💡</div>
+                    <div class="summary-content">
+                        <strong>Best Time for Activities:</strong> ${bestPeriod.period.name} ${bestPeriod.period.icon}
+                        <br><span class="summary-detail">Lowest expected AQI: ~${Math.round(bestPeriod.aqi)}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        forecastContainer.innerHTML = html;
+    }
+
+    // Get time-based health advice
+    getTimeBasedAdvice(aqi, periodName) {
+        if (aqi <= 50) {
+            return {
+                activity: '✅ Perfect for all outdoor activities',
+                details: 'Enjoy running, sports, or any physical activities without concern.'
+            };
+        } else if (aqi <= 100) {
+            return {
+                activity: '⚠️ Safe for most, sensitive groups should monitor',
+                details: 'Generally safe for outdoor activities. Those with respiratory conditions should watch for symptoms.'
+            };
+        } else if (aqi <= 150) {
+            return {
+                activity: '⚠️ Limit prolonged outdoor exertion',
+                details: 'Reduce intense outdoor activities. Wear a mask if you must go outside for extended periods.'
+            };
+        } else if (aqi <= 200) {
+            return {
+                activity: '🚫 Avoid outdoor activities',
+                details: 'Stay indoors with windows closed. Use air purifiers. Wear N95 masks if you must go out.'
+            };
+        } else if (aqi <= 300) {
+            return {
+                activity: '🚨 Stay indoors - Health Alert',
+                details: 'Serious health risk. Avoid all outdoor exposure. Keep emergency medications ready.'
+            };
+        } else {
+            return {
+                activity: '🆘 Emergency - Hazardous conditions',
+                details: 'Extreme health risk. Stay indoors with air purification. Seek medical help if breathing difficulty occurs.'
+            };
+        }
+    }
+
+    // Get AQI category info
+    getAQICategory(aqi) {
+        if (aqi <= 50) return { name: 'Good', class: 'good', color: '#10b981' };
+        if (aqi <= 100) return { name: 'Moderate', class: 'moderate', color: '#fbbf24' };
+        if (aqi <= 150) return { name: 'Unhealthy for Sensitive', class: 'sensitive', color: '#f97316' };
+        if (aqi <= 200) return { name: 'Unhealthy', class: 'unhealthy', color: '#ef4444' };
+        if (aqi <= 300) return { name: 'Very Unhealthy', class: 'very-unhealthy', color: '#9333ea' };
+        return { name: 'Hazardous', class: 'hazardous', color: '#7c2d12' };
     }
 
     // Update group-specific cards with AQI-based recommendations

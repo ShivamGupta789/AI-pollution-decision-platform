@@ -480,10 +480,16 @@ body::before {
 
 .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap: var(--spacing-lg);
     margin-bottom: var(--spacing-xl);
 }
+
+/* AQI card spans full width on first row */
+.metric-card.aqi-card {
+    grid-column: 1 / -1;
+}
+
 
 .metric-card {
     background: var(--card-bg);
@@ -580,8 +586,13 @@ body::before {
     grid-column: span 2;
 }
 
-.aqi-card .metric-value {
-    font-size: 4rem;
+.aqi-card .metric-value,
+#currentAQI {
+    font-size: 6rem !important;
+}
+
+.aqi-card .metric-label {
+    font-size: 1.3rem;
 }
 
 /* Progress Bars */
@@ -855,6 +866,7 @@ body::before {
     gap: var(--spacing-sm);
     margin-bottom: var(--spacing-sm);
     font-size: 0.75rem;
+    color: #ffffff;
 }
 
 .legend-color {
@@ -1133,19 +1145,23 @@ body::before {
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 400px;
+    /* Increased size for chart */
 }
 
 .sources-list {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: 1.25rem;
+    /* Increased from spacing-md (0.75-1rem) */
 }
 
 .source-item {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-md);
-    padding: var(--spacing-md);
+    padding: 1.25rem;
+    /* Increased from spacing-md */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1158,11 +1174,14 @@ body::before {
 
 .source-name {
     font-weight: 600;
+    font-size: 1.1rem;
+    /* Increased size */
 }
 
 .source-percentage {
-    font-size: 1.25rem;
     font-weight: 700;
+    font-size: 1.1rem;
+    /* Increased size */
     color: var(--accent-cyan);
 }
 
@@ -1241,6 +1260,10 @@ body::before {
         grid-template-columns: repeat(2, 1fr);
     }
 
+    .metric-card.aqi-card {
+        grid-column: 1 / -1;
+    }
+
     .page-title {
         font-size: 1.25rem;
     }
@@ -1253,6 +1276,10 @@ body::before {
 @media (max-width: 480px) {
     .metrics-grid {
         grid-template-columns: 1fr;
+    }
+
+    .metric-card.aqi-card {
+        grid-column: 1 / -1;
     }
 
     .topbar-right {

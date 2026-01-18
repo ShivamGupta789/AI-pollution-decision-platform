@@ -1,0 +1,190 @@
+/* Daily Health Forecast Styles */
+
+.forecast-update-time {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.daily-forecast-container {
+    margin-top: var(--spacing-lg);
+}
+
+.hourly-forecast-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    /* Increased from var(--spacing-lg) */
+    margin-bottom: var(--spacing-lg);
+}
+
+.forecast-period-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    /* Increased from var(--spacing-lg) */
+    transition: all var(--transition-fast);
+    min-height: 200px;
+    /* Added minimum height for consistency */
+}
+
+.forecast-period-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+.period-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.period-icon {
+    font-size: 2rem;
+}
+
+.period-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.period-aqi {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.aqi-range {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.aqi-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    font-family: 'Outfit', sans-serif;
+    line-height: 1;
+}
+
+.aqi-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+}
+
+.aqi-minmax {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.period-status {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.period-status.good {
+    background: #10b98120;
+    color: #10b981;
+}
+
+.period-status.moderate {
+    background: #fbbf2420;
+    color: #f59e0b;
+}
+
+.period-status.sensitive,
+.period-status.unhealthy {
+    background: #f9731620;
+    color: #f97316;
+}
+
+.period-status.very-unhealthy {
+    background: #9333ea20;
+    color: #9333ea;
+}
+
+.period-status.hazardous {
+    background: #ef444420;
+    color: #ef4444;
+}
+
+/* Make AQI values red for hazardous conditions */
+.forecast-period-card:has(.period-status.hazardous) .aqi-value {
+    color: #ef4444 !important;
+}
+
+.period-advice {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.period-advice strong {
+    color: var(--accent-cyan);
+}
+
+.period-details {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* Forecast Summary */
+.forecast-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.summary-icon {
+    font-size: 2.5rem;
+}
+
+.summary-content {
+    flex: 1;
+    color: #0c4a6e;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.summary-content strong {
+    color: #075985;
+    font-size: 1.05rem;
+}
+
+.summary-detail {
+    color: #0369a1;
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hourly-forecast-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .period-aqi {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-sm);
+    }
+}
