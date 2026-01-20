@@ -2,14 +2,14 @@
 const API_CONFIG = {
     // WeatherAPI.com Configuration (for weather data)
     WEATHERAPI: {
-        API_KEY: '5d659c90699942afb11132603261701',
+        API_KEY: '',
         BASE_URL: 'https://api.weatherapi.com/v1',
         ENABLED: true
     },
 
     // WAQI (World Air Quality Index) Configuration
     WAQI: {
-        TOKEN: '4b892755feb1b7272647fb9d922449caa050d6ad',
+        TOKEN: '',
         BASE_URL: 'https://api.waqi.info/feed',
         // Station mapping for different Delhi NCR locations
         STATIONS: {
